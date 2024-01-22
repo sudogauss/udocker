@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export TMPDIR=$PWD/tmp
+export UDOCKER_DIR=$PWD/install
+export PATH=$PWD:$PATH
