@@ -286,21 +286,30 @@ class ContainerStructure(object):
                    "--exclude=dev/*", "--exclude=etc/udev/devices/*",
                    "--no-same-permissions", r"--exclude=.wh.*",
                    ] + optional_flags + ["-f", tarf]
+            cmd_ = ""
+            for c in cmd:
+                cmd_ = cmd_ + c + " "
+            print("===== Executing tar command: " + cmd_ + " =====")
             if subprocess.call(cmd, stderr=Msg.chlderr, close_fds=True):
                 Msg().err("Error: while extracting image layer")
                 status = False
             cmd = ["find", destdir,
-                   "(", "-type", "d", "!", "-perm", "-u=x", "-exec",
-                   "chmod", "u+x", "{}", ";", ")", ",",
-                   "(", "!", "-perm", "-u=w", "-exec", "chmod",
-                   "u+w", "{}", ";", ")", ",",
-                   "(", "!", "-perm", "-u=r", "-exec", "chmod",
-                   "u+r", "{}", ";", ")", ",",
-                   "(", "!", "-gid", gid, "-exec", "chgrp", gid,
-                   "{}", ";", ")", ",",
-                   "(", "-name", ".wh.*", "-exec", "rm", "-f",
-                   "--preserve-root", "{}", ";", ")"]
-            if subprocess.call(cmd, stderr=Msg.chlderr, close_fds=True):
+                   "\(", "-type", "d", "!", "-perm", "-u=x", "-exec",
+                   "chmod", "u+x", "{}", "\;", "\)", "-a",
+                   "\(", "!", "-perm", "-u=w", "-exec", "chmod",
+                   "u+w", "{}", "\;", "\)", "-a",
+                   "\(", "!", "-perm", "-u=r", "-exec", "chmod",
+                   "u+r", "{}", "\;", "\)", "-a",
+                   "\(", "-exec", "chgrp", gid,
+                   "{}", "\;", "\)", "-a",
+                   "\(", "-name", ".wh.*", "-exec", "rm", "-f",
+                   "--preserve-root", "{}", "\;", "\)"]
+            cmd_ = ""
+            for c in cmd:
+                cmd_ = cmd_ + c + " "
+            print("===== Executing find command: " + cmd_ + " =====")           
+            proc = subprocess.run(cmd, close_fds=True, capture_output=True)
+            if proc.returncode:
                 status = False
                 Msg().err("Error: while modifying attributes of image layer")
         return status
